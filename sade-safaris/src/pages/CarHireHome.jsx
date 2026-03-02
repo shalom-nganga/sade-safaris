@@ -45,7 +45,7 @@ function CarHireHome() {
 
             {/* Left */}
             <div>
-              <div style={{
+              {/* <div style={{
                 display: 'inline-flex', alignItems: 'center', gap: '8px',
                 background: 'rgba(96,165,250,.15)', border: '1px solid rgba(96,165,250,.3)',
                 borderRadius: '20px', padding: '6px 16px', marginBottom: '24px',
@@ -54,7 +54,7 @@ function CarHireHome() {
                 <span style={{ fontSize: '11px', fontWeight: 700, color: '#93c5fd', letterSpacing: '1.5px', textTransform: 'uppercase' }}>
                   NAIROBI'S #1 CAR HIRE SERVICE
                 </span>
-              </div>
+              </div> */}
 
               <h1 style={{
                 fontFamily: "'Oswald', sans-serif",
