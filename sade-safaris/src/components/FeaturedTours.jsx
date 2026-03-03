@@ -9,10 +9,13 @@ function FeaturedTours() {
   const navigate = useNavigate();
   const [tours, setTours] = useState([]);
 
-    useEffect(() => {
-    setTours(getTours());
-  }, []);
-
+   useEffect(() => {
+  async function load() {
+    const data = await getTours();
+    setTours(Array.isArray(data) ? data : []);
+  }
+  load();
+}, []);
   const filtered = activeCat === 'All' ? tours : tours.filter(t => t.category === activeCat);
 
   return (
