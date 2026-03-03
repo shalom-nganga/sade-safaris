@@ -3,12 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import TopBar from '../components/TopBar';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import tours from '../data/tours';
+import { getTours } from '../store';
 
 function TourDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const tour = tours.find(t => t.id === parseInt(id));
+  const tours = getTours();
+  const tour = tours.find(t => String(t.id) === String(id));
 
   const [activeImg, setActiveImg] = useState(0);
   const [activeTab, setActiveTab] = useState('overview');

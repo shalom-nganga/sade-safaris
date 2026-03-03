@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect  } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TopBar from '../components/TopBar';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import tours from '../data/tours';
+import { getTours } from '../store';
 
 const categories = ['All', 'Wildlife Safaris', 'Adventures', 'Beach & Coastal', 'Cultural Tours'];
 const durations = ['Any Duration', '1-3 Days', '4-6 Days', '7+ Days'];
@@ -11,12 +11,17 @@ const sortOptions = ['Default', 'Price: Low to High', 'Price: High to Low', 'Top
 
 function Tours() {
   const navigate = useNavigate();
+  const [tours, setTours] = useState([]);
   const [activeCat, setActiveCat] = useState('All');
   const [duration, setDuration] = useState('Any Duration');
   const [sort, setSort] = useState('Default');
   const [maxPrice, setMaxPrice] = useState(150000);
   const [hovered, setHovered] = useState(null);
   const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    setTours(getTours());
+  }, []);
 
   // Filter
   let filtered = tours.filter(t => {

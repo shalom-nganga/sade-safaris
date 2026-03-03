@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TopBar from '../components/TopBar';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { getOffers } from '../store';
 
-const offers = [
+const staticOffers = [
   {
     id: 1,
     title: 'Early Bird Masai Mara',
@@ -103,14 +104,35 @@ const offers = [
   },
 ];
 
-const tags = ['All', 'Early Bird', 'Couples', 'Family', 'Last Minute', 'Group', 'Honeymoon'];
+const staticTags = ['All', 'Early Bird', 'Couples', 'Family', 'Last Minute', 'Group', 'Honeymoon'];
 
 function SpecialOffers() {
   const navigate = useNavigate();
+  const [dynamicOffers, setDynamicOffers] = useState([]);
   const [activeTag, setActiveTag] = useState('All');
   const [hovered, setHovered] = useState(null);
 
-  const filtered = activeTag === 'All' ? offers : offers.filter(o => o.tag === activeTag);
+  useEffect(() => {
+    const active = getOffers().filter(o => o.status === 'Active');
+    setDynamicOffers(active);
+  }, []);
+
+  // Merge dynamic + static, dynamic first
+  const allOffers = [
+    ...dynamicOffers,
+    ...staticOffers.filter(so => !dynamicOffers.find(d => d.id === so.id)),
+  ];
+
+  // Build tags from all offers
+  const dynamicTags = dynamicOffers.map(o => o.tag).filter(Boolean);
+  const allTags = ['All', ...new Set([...dynamicTags, ...staticTags.slice(1)])];
+
+  const filtered = activeTag === 'All'
+    ? allOffers
+    : allOffers.filter(o => o.tag === activeTag);
+
+  // Helper to normalize field names between static and dynamic offers
+  const getField = (offer, dynamic, stat) => offer[dynamic] !== undefined ? offer[dynamic] : offer[stat];
 
   return (
     <div>
@@ -130,53 +152,26 @@ function SpecialOffers() {
           background: 'linear-gradient(135deg, rgba(45,106,26,.75), transparent)',
         }} />
         <div style={{ position: 'relative', zIndex: 2, maxWidth: '1400px', margin: '0 auto' }}>
-          <p style={{
-            fontSize: '12px', fontWeight: 800, color: '#f5c518',
-            letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '12px',
-          }}>
+          <p style={{ fontSize: '12px', fontWeight: 800, color: '#f5c518', letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '12px' }}>
             LIMITED TIME DEALS
           </p>
-          <h1 style={{
-            fontFamily: "'Oswald', sans-serif",
-            fontSize: 'clamp(40px, 6vw, 80px)',
-            fontWeight: 700, color: 'white',
-            textTransform: 'uppercase', lineHeight: 1.05, marginBottom: '20px',
-          }}>
-            SPECIAL OFFERS &<br />
-            <span style={{ color: '#f5c518' }}>EXCLUSIVE DEALS</span>
+          <h1 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 'clamp(40px, 6vw, 80px)', fontWeight: 700, color: 'white', textTransform: 'uppercase', lineHeight: 1.05, marginBottom: '20px' }}>
+            SPECIAL OFFERS &<br /><span style={{ color: '#f5c518' }}>EXCLUSIVE DEALS</span>
           </h1>
-          <p style={{
-            fontSize: '17px', color: 'rgba(255,255,255,.85)',
-            maxWidth: '560px', lineHeight: 1.75,
-          }}>
-            Incredible safari experiences at unbeatable prices. These deals are
-            time-limited — don't miss out on your dream African adventure.
+          <p style={{ fontSize: '17px', color: 'rgba(255,255,255,.85)', maxWidth: '560px', lineHeight: 1.75 }}>
+            Incredible safari experiences at unbeatable prices. These deals are time-limited — don't miss out on your dream African adventure.
           </p>
         </div>
       </section>
 
       {/* ── URGENCY STRIP ── */}
       <section style={{ background: '#e74c3c', padding: '16px 5%' }}>
-        <div style={{
-          maxWidth: '1400px', margin: '0 auto',
-          display: 'flex', justifyContent: 'center',
-          alignItems: 'center', gap: '12px', flexWrap: 'wrap',
-        }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '20px' }}>⏰</span>
-          <span style={{
-            fontSize: '14px', fontWeight: 800, color: 'white',
-            letterSpacing: '.5px',
-          }}>
+          <span style={{ fontSize: '14px', fontWeight: 800, color: 'white', letterSpacing: '.5px' }}>
             HURRY! These deals are selling fast. Limited availability on all offers.
           </span>
-          <button
-            onClick={() => navigate('/contact')}
-            style={{
-              background: 'white', color: '#e74c3c', border: 'none',
-              padding: '8px 20px', fontSize: '12px', fontWeight: 800,
-              cursor: 'pointer', borderRadius: '4px', fontFamily: 'inherit',
-              letterSpacing: '.5px', transition: 'all .2s',
-            }}
+          <button onClick={() => navigate('/contact')} style={{ background: 'white', color: '#e74c3c', border: 'none', padding: '8px 20px', fontSize: '12px', fontWeight: 800, cursor: 'pointer', borderRadius: '4px', fontFamily: 'inherit', letterSpacing: '.5px' }}
             onMouseEnter={e => e.currentTarget.style.opacity = '.85'}
             onMouseLeave={e => e.currentTarget.style.opacity = '1'}
           >
@@ -190,50 +185,21 @@ function SpecialOffers() {
         <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
 
           {/* Header + filters */}
-          <div style={{
-            display: 'flex', justifyContent: 'space-between',
-            alignItems: 'flex-end', marginBottom: '40px',
-            flexWrap: 'wrap', gap: '20px',
-          }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '40px', flexWrap: 'wrap', gap: '20px' }}>
             <div>
-              <p style={{
-                fontSize: '12px', fontWeight: 800, color: '#4a9c2f',
-                letterSpacing: '2.5px', textTransform: 'uppercase', marginBottom: '8px',
-              }}>
-                SAVE BIG ON SAFARI
-              </p>
-              <h2 style={{
-                fontFamily: "'Oswald', sans-serif", fontSize: '38px',
-                fontWeight: 700, color: '#1a1a1a', textTransform: 'uppercase',
-              }}>
-                CURRENT DEALS
-              </h2>
+              <p style={{ fontSize: '12px', fontWeight: 800, color: '#4a9c2f', letterSpacing: '2.5px', textTransform: 'uppercase', marginBottom: '8px' }}>SAVE BIG ON SAFARI</p>
+              <h2 style={{ fontFamily: "'Oswald', sans-serif", fontSize: '38px', fontWeight: 700, color: '#1a1a1a', textTransform: 'uppercase' }}>CURRENT DEALS</h2>
             </div>
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              {tags.map(t => (
-                <button
-                  key={t}
-                  onClick={() => setActiveTag(t)}
-                  style={{
-                    fontSize: '12px', fontWeight: 700, padding: '9px 18px',
-                    borderRadius: '3px', cursor: 'pointer', fontFamily: 'inherit',
-                    transition: 'all .2s',
-                    background: activeTag === t ? '#4a9c2f' : 'white',
-                    color: activeTag === t ? 'white' : '#555',
-                    border: activeTag === t ? '2px solid #4a9c2f' : '2px solid #ddd',
-                  }}
-                  onMouseEnter={e => {
-                    if (activeTag !== t) {
-                      e.currentTarget.style.borderColor = '#4a9c2f';
-                      e.currentTarget.style.color = '#4a9c2f';
-                    }
-                  }}
-                  onMouseLeave={e => {
-                    if (activeTag !== t) {
-                      e.currentTarget.style.borderColor = '#ddd';
-                      e.currentTarget.style.color = '#555';
-                    }
-                  }}
+              {allTags.map(t => (
+                <button key={t} onClick={() => setActiveTag(t)} style={{
+                  fontSize: '12px', fontWeight: 700, padding: '9px 18px', borderRadius: '3px', cursor: 'pointer', fontFamily: 'inherit', transition: 'all .2s',
+                  background: activeTag === t ? '#4a9c2f' : 'white',
+                  color: activeTag === t ? 'white' : '#555',
+                  border: activeTag === t ? '2px solid #4a9c2f' : '2px solid #ddd',
+                }}
+                  onMouseEnter={e => { if (activeTag !== t) { e.currentTarget.style.borderColor = '#4a9c2f'; e.currentTarget.style.color = '#4a9c2f'; } }}
+                  onMouseLeave={e => { if (activeTag !== t) { e.currentTarget.style.borderColor = '#ddd'; e.currentTarget.style.color = '#555'; } }}
                 >
                   {t}
                 </button>
@@ -242,228 +208,121 @@ function SpecialOffers() {
           </div>
 
           {/* Cards */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
-            gap: '28px',
-          }}>
-            {filtered.map(offer => (
-              <div
-                key={offer.id}
-                onMouseEnter={() => setHovered(offer.id)}
-                onMouseLeave={() => setHovered(null)}
-                style={{
-                  background: 'white', borderRadius: '8px', overflow: 'hidden',
-                  boxShadow: hovered === offer.id ? '0 20px 48px rgba(0,0,0,.14)' : '0 2px 12px rgba(0,0,0,.07)',
-                  transform: hovered === offer.id ? 'translateY(-8px)' : 'translateY(0)',
-                  transition: 'all .3s ease', cursor: 'pointer',
-                }}
-              >
-                {/* Image */}
-                <div style={{ height: '220px', overflow: 'hidden', position: 'relative' }}>
-                  <img
-                    src={offer.img}
-                    alt={offer.title}
-                    style={{
-                      width: '100%', height: '100%', objectFit: 'cover',
-                      transform: hovered === offer.id ? 'scale(1.06)' : 'scale(1)',
-                      transition: 'transform .5s ease',
-                    }}
-                  />
-                  <div style={{
-                    position: 'absolute', inset: 0,
-                    background: 'linear-gradient(to top, rgba(0,0,0,.65) 0%, transparent 55%)',
-                  }} />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: '28px' }}>
+            {filtered.map(offer => {
+              const originalPrice = getField(offer, 'original_price', 'originalPrice');
+              const offerPrice = getField(offer, 'offer_price', 'offerPrice');
+              const validUntil = getField(offer, 'valid_until', 'validUntil');
+              const desc = getField(offer, 'description', 'desc');
+              const location = offer.location || '';
+              const days = offer.days || '';
 
-                  {/* Discount badge — big and bold */}
-                  <div style={{
-                    position: 'absolute', top: '14px', left: '14px',
-                    background: '#e74c3c', color: 'white',
-                    fontFamily: "'Oswald', sans-serif",
-                    fontSize: '22px', fontWeight: 700,
-                    padding: '6px 14px', borderRadius: '4px',
-                    boxShadow: '0 4px 12px rgba(231,76,60,.4)',
-                  }}>
-                    {offer.discount}
-                  </div>
+              return (
+                <div key={offer.id} onMouseEnter={() => setHovered(offer.id)} onMouseLeave={() => setHovered(null)}
+                  style={{
+                    background: 'white', borderRadius: '8px', overflow: 'hidden',
+                    boxShadow: hovered === offer.id ? '0 20px 48px rgba(0,0,0,.14)' : '0 2px 12px rgba(0,0,0,.07)',
+                    transform: hovered === offer.id ? 'translateY(-8px)' : 'translateY(0)',
+                    transition: 'all .3s ease', cursor: 'pointer',
+                  }}
+                >
+                  {/* Image */}
+                  <div style={{ height: '220px', overflow: 'hidden', position: 'relative' }}>
+                    {offer.img ? (
+                      <img src={offer.img} alt={offer.title} style={{ width: '100%', height: '100%', objectFit: 'cover', transform: hovered === offer.id ? 'scale(1.06)' : 'scale(1)', transition: 'transform .5s ease' }} />
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #f59e0b, #d97706)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px' }}>🎁</div>
+                    )}
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,.65) 0%, transparent 55%)' }} />
 
-                  {/* Type badge */}
-                  <div style={{
-                    position: 'absolute', top: '14px', right: '14px',
-                    background: offer.badgeColor, color: 'white',
-                    fontSize: '11px', fontWeight: 800, letterSpacing: '.5px',
-                    padding: '5px 12px', borderRadius: '3px', textTransform: 'uppercase',
-                  }}>
-                    {offer.badge}
-                  </div>
-
-                  {/* Bottom info */}
-                  <div style={{
-                    position: 'absolute', bottom: '14px', left: '14px', right: '14px',
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
-                  }}>
-                    <div>
-                      <div style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,.8)' }}>
-                        📍 {offer.location}
-                      </div>
-                      <div style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,.8)', marginTop: '2px' }}>
-                        ⏱ {offer.days}
-                      </div>
+                    <div style={{ position: 'absolute', top: '14px', left: '14px', background: '#e74c3c', color: 'white', fontFamily: "'Oswald', sans-serif", fontSize: '22px', fontWeight: 700, padding: '6px 14px', borderRadius: '4px', boxShadow: '0 4px 12px rgba(231,76,60,.4)' }}>
+                      {offer.discount}
                     </div>
-                    <div style={{
-                      background: 'rgba(0,0,0,.5)', backdropFilter: 'blur(8px)',
-                      borderRadius: '4px', padding: '5px 10px', textAlign: 'right',
-                    }}>
-                      <div style={{ fontSize: '10px', color: 'rgba(255,255,255,.6)', textDecoration: 'line-through' }}>
-                        KES {offer.originalPrice.toLocaleString()}
+
+                    {offer.badge && (
+                      <div style={{ position: 'absolute', top: '14px', right: '14px', background: offer.badgeColor || '#4a9c2f', color: 'white', fontSize: '11px', fontWeight: 800, letterSpacing: '.5px', padding: '5px 12px', borderRadius: '3px', textTransform: 'uppercase' }}>
+                        {offer.badge}
                       </div>
-                      <div style={{
-                        fontFamily: "'Oswald', sans-serif", fontSize: '18px',
-                        fontWeight: 700, color: '#f5c518',
-                      }}>
-                        KES {offer.offerPrice.toLocaleString()}
+                    )}
+
+                    <div style={{ position: 'absolute', bottom: '14px', left: '14px', right: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                      <div>
+                        {location && <div style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,.8)' }}>📍 {location}</div>}
+                        {days && <div style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,.8)', marginTop: '2px' }}>⏱ {days}</div>}
                       </div>
+                      {(originalPrice || offerPrice) && (
+                        <div style={{ background: 'rgba(0,0,0,.5)', backdropFilter: 'blur(8px)', borderRadius: '4px', padding: '5px 10px', textAlign: 'right' }}>
+                          {originalPrice && <div style={{ fontSize: '10px', color: 'rgba(255,255,255,.6)', textDecoration: 'line-through' }}>KES {Number(originalPrice).toLocaleString()}</div>}
+                          {offerPrice && <div style={{ fontFamily: "'Oswald', sans-serif", fontSize: '18px', fontWeight: 700, color: '#f5c518' }}>KES {Number(offerPrice).toLocaleString()}</div>}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Body */}
+                  <div style={{ padding: '24px' }}>
+                    <h3 style={{ fontFamily: "'Oswald', sans-serif", fontSize: '22px', fontWeight: 700, color: '#1a1a1a', marginBottom: '10px' }}>{offer.title}</h3>
+                    <p style={{ fontSize: '13px', color: '#666', lineHeight: 1.7, marginBottom: '16px' }}>{desc}</p>
+
+                    {(offer.includes || []).length > 0 && (
+                      <div style={{ marginBottom: '16px' }}>
+                        {offer.includes.map((item, i) => (
+                          <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'center', fontSize: '12px', color: '#555', marginBottom: '5px' }}>
+                            <span style={{ color: '#4a9c2f', fontWeight: 800, flexShrink: 0 }}>✓</span>{item}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {validUntil && (
+                      <div style={{ background: '#fff8e1', border: '1px solid #f5c518', borderRadius: '4px', padding: '8px 14px', marginBottom: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '14px' }}>⏰</span>
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#b8860b' }}>OFFER VALID UNTIL: {validUntil}</span>
+                      </div>
+                    )}
+
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <button onClick={() => navigate('/contact')} style={{ flex: 1, padding: '13px', fontSize: '13px', fontWeight: 800, background: '#4a9c2f', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '.5px', transition: 'background .2s' }}
+                        onMouseEnter={e => e.currentTarget.style.background = '#2d6a1a'}
+                        onMouseLeave={e => e.currentTarget.style.background = '#4a9c2f'}
+                      >
+                        CLAIM THIS OFFER →
+                      </button>
+                      <button onClick={() => navigate('/tours')} style={{ padding: '13px 16px', fontSize: '12px', fontWeight: 700, background: 'transparent', color: '#4a9c2f', border: '2px solid #4a9c2f', borderRadius: '4px', cursor: 'pointer', fontFamily: 'inherit', transition: 'all .2s' }}
+                        onMouseEnter={e => { e.currentTarget.style.background = '#4a9c2f'; e.currentTarget.style.color = 'white'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#4a9c2f'; }}
+                      >
+                        VIEW TOUR
+                      </button>
                     </div>
                   </div>
                 </div>
-
-                {/* Body */}
-                <div style={{ padding: '24px' }}>
-                  <h3 style={{
-                    fontFamily: "'Oswald', sans-serif", fontSize: '22px',
-                    fontWeight: 700, color: '#1a1a1a', marginBottom: '10px',
-                  }}>
-                    {offer.title}
-                  </h3>
-                  <p style={{
-                    fontSize: '13px', color: '#666', lineHeight: 1.7, marginBottom: '16px',
-                  }}>
-                    {offer.desc}
-                  </p>
-
-                  {/* Includes */}
-                  <div style={{ marginBottom: '16px' }}>
-                    {offer.includes.map(item => (
-                      <div key={item} style={{
-                        display: 'flex', gap: '8px', alignItems: 'center',
-                        fontSize: '12px', color: '#555', marginBottom: '5px',
-                      }}>
-                        <span style={{ color: '#4a9c2f', fontWeight: 800, flexShrink: 0 }}>✓</span>
-                        {item}
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Valid until */}
-                  <div style={{
-                    background: '#fff8e1', border: '1px solid #f5c518',
-                    borderRadius: '4px', padding: '8px 14px', marginBottom: '18px',
-                    display: 'flex', alignItems: 'center', gap: '8px',
-                  }}>
-                    <span style={{ fontSize: '14px' }}>⏰</span>
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#b8860b' }}>
-                      OFFER VALID UNTIL: {offer.validUntil}
-                    </span>
-                  </div>
-
-                  {/* Buttons */}
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <button
-                      onClick={() => navigate('/contact')}
-                      style={{
-                        flex: 1, padding: '13px', fontSize: '13px', fontWeight: 800,
-                        background: '#4a9c2f', color: 'white', border: 'none',
-                        borderRadius: '4px', cursor: 'pointer', fontFamily: 'inherit',
-                        letterSpacing: '.5px', transition: 'background .2s',
-                      }}
-                      onMouseEnter={e => e.currentTarget.style.background = '#2d6a1a'}
-                      onMouseLeave={e => e.currentTarget.style.background = '#4a9c2f'}
-                    >
-                      CLAIM THIS OFFER →
-                    </button>
-                    <button
-                      onClick={() => navigate('/tours')}
-                      style={{
-                        padding: '13px 16px', fontSize: '12px', fontWeight: 700,
-                        background: 'transparent', color: '#4a9c2f',
-                        border: '2px solid #4a9c2f', borderRadius: '4px',
-                        cursor: 'pointer', fontFamily: 'inherit', transition: 'all .2s',
-                      }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.background = '#4a9c2f';
-                        e.currentTarget.style.color = 'white';
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.background = 'transparent';
-                        e.currentTarget.style.color = '#4a9c2f';
-                      }}
-                    >
-                      VIEW TOUR
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* ── NEWSLETTER SIGNUP ── */}
       <section style={{ padding: '72px 5%', background: '#2d6a1a' }}>
-        <div style={{
-          maxWidth: '700px', margin: '0 auto', textAlign: 'center',
-        }}>
-          <p style={{
-            fontSize: '12px', fontWeight: 800, color: '#f5c518',
-            letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '12px',
-          }}>
-            NEVER MISS A DEAL
-          </p>
-          <h2 style={{
-            fontFamily: "'Oswald', sans-serif", fontSize: '38px',
-            fontWeight: 700, color: 'white', textTransform: 'uppercase',
-            marginBottom: '16px',
-          }}>
+        <div style={{ maxWidth: '700px', margin: '0 auto', textAlign: 'center' }}>
+          <p style={{ fontSize: '12px', fontWeight: 800, color: '#f5c518', letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '12px' }}>NEVER MISS A DEAL</p>
+          <h2 style={{ fontFamily: "'Oswald', sans-serif", fontSize: '38px', fontWeight: 700, color: 'white', textTransform: 'uppercase', marginBottom: '16px' }}>
             GET EXCLUSIVE OFFERS<br />IN YOUR INBOX
           </h2>
-          <p style={{
-            fontSize: '15px', color: 'rgba(255,255,255,.75)',
-            lineHeight: 1.75, marginBottom: '36px',
-          }}>
-            Subscribe to our newsletter and be the first to hear about flash sales,
-            seasonal deals, and new safari packages before anyone else.
+          <p style={{ fontSize: '15px', color: 'rgba(255,255,255,.75)', lineHeight: 1.75, marginBottom: '36px' }}>
+            Subscribe to our newsletter and be the first to hear about flash sales, seasonal deals, and new safari packages before anyone else.
           </p>
-          <div style={{
-            display: 'flex', gap: '0', maxWidth: '500px', margin: '0 auto',
-            boxShadow: '0 8px 32px rgba(0,0,0,.2)',
-          }}>
-            <input
-              type="email"
-              placeholder="Enter your email address..."
-              style={{
-                flex: 1, padding: '16px 20px', fontSize: '14px',
-                border: 'none', outline: 'none', borderRadius: '4px 0 0 4px',
-                fontFamily: 'inherit',
-              }}
-            />
-            <button style={{
-              background: '#f5c518', color: '#1a1a1a', border: 'none',
-              padding: '16px 24px', fontSize: '13px', fontWeight: 800,
-              cursor: 'pointer', borderRadius: '0 4px 4px 0', fontFamily: 'inherit',
-              letterSpacing: '.5px', transition: 'background .2s', whiteSpace: 'nowrap',
-            }}
+          <div style={{ display: 'flex', gap: '0', maxWidth: '500px', margin: '0 auto', boxShadow: '0 8px 32px rgba(0,0,0,.2)' }}>
+            <input type="email" placeholder="Enter your email address..." style={{ flex: 1, padding: '16px 20px', fontSize: '14px', border: 'none', outline: 'none', borderRadius: '4px 0 0 4px', fontFamily: 'inherit' }} />
+            <button style={{ background: '#f5c518', color: '#1a1a1a', border: 'none', padding: '16px 24px', fontSize: '13px', fontWeight: 800, cursor: 'pointer', borderRadius: '0 4px 4px 0', fontFamily: 'inherit', letterSpacing: '.5px', transition: 'background .2s', whiteSpace: 'nowrap' }}
               onMouseEnter={e => e.currentTarget.style.background = '#e6b800'}
               onMouseLeave={e => e.currentTarget.style.background = '#f5c518'}
             >
               SUBSCRIBE →
             </button>
           </div>
-          <p style={{
-            fontSize: '11px', color: 'rgba(255,255,255,.4)',
-            marginTop: '12px',
-          }}>
-            No spam. Unsubscribe anytime. We respect your privacy.
-          </p>
+          <p style={{ fontSize: '11px', color: 'rgba(255,255,255,.4)', marginTop: '12px' }}>No spam. Unsubscribe anytime. We respect your privacy.</p>
         </div>
       </section>
 

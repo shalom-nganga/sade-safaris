@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TopBar from '../components/TopBar';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { getBlogPosts } from '../store';
 
-const posts = [
+const staticPosts = [
   {
     id: 1,
     title: 'The Great Migration: Everything You Need to Know',
@@ -102,16 +103,30 @@ const categories = ['All', 'Wildlife', 'Destinations', 'Travel Tips', 'Conservat
 
 function Blog() {
   const navigate = useNavigate();
+  const [dynamicPosts, setDynamicPosts] = useState([]);
   const [activeCategory, setActiveCategory] = useState('All');
   const [hovered, setHovered] = useState(null);
   const [search, setSearch] = useState('');
 
-  const featured = posts.find(p => p.featured);
-  const rest = posts.filter(p => !p.featured);
+  useEffect(() => {
+    const published = getBlogPosts().filter(p => p.status === 'Published');
+    setDynamicPosts(published);
+  }, []);
+
+  // Merge: dynamic posts first, then static ones that don't conflict
+  const allPosts = [
+    ...dynamicPosts,
+    ...staticPosts.filter(sp => !dynamicPosts.find(dp => dp.id === sp.id)),
+  ];
+
+  const featured = allPosts.find(p => p.featured) || allPosts[0] || null;
+  const rest = allPosts.filter(p => p.id !== (featured ? featured.id : null));
 
   const filtered = (activeCategory === 'All' ? rest : rest.filter(p => p.category === activeCategory))
-    .filter(p => p.title.toLowerCase().includes(search.toLowerCase()) ||
-      p.excerpt.toLowerCase().includes(search.toLowerCase()));
+    .filter(p =>
+      p.title.toLowerCase().includes(search.toLowerCase()) ||
+      (p.excerpt || '').toLowerCase().includes(search.toLowerCase())
+    );
 
   return (
     <div>
@@ -163,7 +178,6 @@ function Blog() {
           {/* ── FEATURED POST ── */}
           {featured && (
             <div
-              onClick={() => {}}
               onMouseEnter={() => setHovered('featured')}
               onMouseLeave={() => setHovered(null)}
               style={{
@@ -216,18 +230,12 @@ function Blog() {
                   display: 'flex', gap: '16px', alignItems: 'center',
                   marginBottom: '28px', flexWrap: 'wrap',
                 }}>
-                  <span style={{ fontSize: '13px', color: '#888', fontWeight: 600 }}>
-                    ✍️ {featured.author}
-                  </span>
-                  <span style={{ fontSize: '13px', color: '#888', fontWeight: 600 }}>
-                    📅 {featured.date}
-                  </span>
-                  <span style={{ fontSize: '13px', color: '#888', fontWeight: 600 }}>
-                    ⏱ {featured.readTime}
-                  </span>
+                  <span style={{ fontSize: '13px', color: '#888', fontWeight: 600 }}>✍️ {featured.author}</span>
+                  <span style={{ fontSize: '13px', color: '#888', fontWeight: 600 }}>📅 {featured.date || featured.created_at}</span>
+                  <span style={{ fontSize: '13px', color: '#888', fontWeight: 600 }}>⏱ {featured.readTime || `${featured.read_time} min read`}</span>
                 </div>
                 <div style={{ display: 'flex', gap: '8px', marginBottom: '28px', flexWrap: 'wrap' }}>
-                  {featured.tags.map(tag => (
+                  {(featured.tags || []).map(tag => (
                     <span key={tag} style={{
                       fontSize: '11px', fontWeight: 700, color: '#4a9c2f',
                       background: '#eaf5e3', padding: '4px 10px', borderRadius: '3px',
@@ -359,7 +367,7 @@ function Blog() {
                       position: 'absolute', bottom: '14px', left: '14px',
                       fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,.9)',
                     }}>
-                      ⏱ {post.readTime}
+                      ⏱ {post.readTime || `${post.read_time} min read`}
                     </div>
                   </div>
 
@@ -385,7 +393,7 @@ function Blog() {
 
                     {/* Tags */}
                     <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '16px' }}>
-                      {post.tags.map(tag => (
+                      {(post.tags || []).map(tag => (
                         <span key={tag} style={{
                           fontSize: '10px', fontWeight: 700, color: '#4a9c2f',
                           background: '#eaf5e3', padding: '3px 8px', borderRadius: '3px',
@@ -406,11 +414,11 @@ function Blog() {
                           {post.author}
                         </div>
                         <div style={{ fontSize: '11px', color: '#aaa' }}>
-                          {post.authorRole}
+                          {post.authorRole || ''}
                         </div>
                       </div>
                       <div style={{ fontSize: '11px', color: '#aaa', fontWeight: 600 }}>
-                        {post.date}
+                        {post.date || post.created_at}
                       </div>
                     </div>
                   </div>

@@ -1,13 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import tours from '../data/tours';
-
+import { getTours } from '../store';
 const categories = ['All', 'Wildlife Safaris', 'Adventures', 'Beach & Coastal', 'Cultural Tours'];
 
 function FeaturedTours() {
   const [activeCat, setActiveCat] = useState('All');
   const [hovered, setHovered] = useState(null);
   const navigate = useNavigate();
+  const [tours, setTours] = useState([]);
+
+    useEffect(() => {
+    setTours(getTours());
+  }, []);
 
   const filtered = activeCat === 'All' ? tours : tours.filter(t => t.category === activeCat);
 

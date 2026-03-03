@@ -12,6 +12,16 @@ import CarDetail from './pages/CarDetail';
 import CarHireHome from './pages/CarHireHome';
 import CarContact from './pages/CarContact';
 import CarServices from './pages/CarServices';
+import AdminLogin from './pages/admin/AdminLogin';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminLayout from './pages/admin/AdminLayout';
+import SafariBookings from './pages/admin/SafariBookings';
+import CarBookings from './pages/admin/CarBookings';
+import ManageTours from './pages/admin/ManageTours';
+import ManageVehicles from './pages/admin/ManageVehicles';
+import AdminBlog from './pages/admin/AdminBlog';
+import AdminOffers from './pages/admin/AdminOffers';
+import AdminMessages from './pages/admin/AdminMessages';
 
 function App() {
   return (
@@ -30,6 +40,15 @@ function App() {
         <Route path="/car-hire/vehicle/:id" element={<CarDetail />} />
         <Route path="/car-hire/contact" element={<CarContact />} />
         <Route path="/car-hire/services" element={<CarServices />} />
+        <Route path="/admin" element={<AdminLogin />} />
+        <Route path="/admin/dashboard" element={<AdminLayout page="dashboard" />} />
+        <Route path="/admin/safari-bookings" element={<AdminLayout page="safari-bookings" />} />
+        <Route path="/admin/car-bookings" element={<AdminLayout page="car-bookings" />} />
+        <Route path="/admin/tours" element={<AdminLayout page="tours" />} />
+        <Route path="/admin/vehicles" element={<AdminLayout page="vehicles" />} />
+        <Route path="/admin/blog" element={<AdminLayout page="blog" />} />
+        <Route path="/admin/offers" element={<AdminLayout page="offers" />} />
+        <Route path="/admin/messages" element={<AdminLayout page="messages" />} />
       </Routes>
     </BrowserRouter>
   );
