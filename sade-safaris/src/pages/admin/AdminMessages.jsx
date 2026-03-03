@@ -9,36 +9,38 @@ function AdminMessages() {
   const [replySent, setReplySent] = useState(false);
 
   useEffect(() => {
-    setMessages(getMessages());
-  }, []);
+  async function load() {
+    setMessages(await getMessages());
+  }
+  load();
+}, []);
 
-  const refresh = () => setMessages(getMessages());
+const refresh = async () => setMessages(await getMessages());
 
-  const filtered = messages.filter(m => filter === 'All' || m.type === filter);
-  const active = selected ? messages.find(m => m.id === selected) : null;
+const handleSelect = async (id) => {
+  setSelected(id);
+  setReply('');
+  setReplySent(false);
+  await markMessageRead(id);
+  refresh();
+};
 
-  const handleSelect = (id) => {
-    setSelected(id);
-    setReply('');
-    setReplySent(false);
-    markMessageRead(id);
-    refresh();
-  };
+const handleReply = async () => {
+  if (!reply.trim()) return;
+  await replyToMessage(selected, reply);
+  setReplySent(true);
+  refresh();
+};
 
-  const handleReply = () => {
-    if (!reply.trim()) return;
-    replyToMessage(selected, reply);
-    setReplySent(true);
-    refresh();
-  };
-
-  const handleDelete = (id) => {
-    deleteMessage(id);
-    setSelected(null);
-    refresh();
-  };
+const handleDelete = async (id) => {
+  await deleteMessage(id);
+  setSelected(null);
+  refresh();
+};
 
   const unread = messages.filter(m => m.status === 'Unread').length;
+  const filtered = filter === 'All' ? messages : messages.filter(m => m.type === filter || m.service === filter);
+  const active = messages.find(m => m.id === selected);
 
   return (
     <div>

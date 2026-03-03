@@ -20,38 +20,42 @@ function ManageVehicles() {
   const [form, setForm] = useState(emptyVehicle);
   const [featureInput, setFeatureInput] = useState('');
 
-  useEffect(() => { setVehicles(getVehicles()); }, []);
-  const refresh = () => setVehicles(getVehicles());
+  useEffect(() => {
+  async function load() {
+    setVehicles(await getVehicles());
+  }
+  load();
+}, []);
 
-  const openAdd = () => { setForm(emptyVehicle); setEditing(null); setShowModal(true); };
-  const openEdit = (v) => { setForm(v); setEditing(v.id); setShowModal(true); };
-  const closeModal = () => { setShowModal(false); setEditing(null); setForm(emptyVehicle); };
+const refresh = async () => setVehicles(await getVehicles());
 
-  const handleChange = e => {
-    const val = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
-    setForm({ ...form, [e.target.name]: val });
-  };
+const handleSave = async () => {
+  if (!form.name || !form.pricePerDay) return alert('Name and price are required!');
+  await saveVehicle({ ...form, id: editing || undefined });
+  await refresh();
+  closeModal();
+};
 
-  const addFeature = () => {
-    if (!featureInput.trim()) return;
-    setForm({ ...form, features: [...(form.features || []), featureInput.trim()] });
-    setFeatureInput('');
-  };
-
-  const removeFeature = (i) => {
-    setForm({ ...form, features: form.features.filter((_, idx) => idx !== i) });
-  };
-
-  const handleSave = () => {
-    if (!form.name || !form.pricePerDay) return alert('Name and price are required!');
-    saveVehicle({ ...form, id: editing || undefined });
+const handleDelete = async (id) => {
+  if (window.confirm('Delete this vehicle?')) {
+    await deleteVehicle(id);
     refresh();
-    closeModal();
-  };
+  }
+};
 
-  const handleDelete = (id) => {
-    if (window.confirm('Delete this vehicle?')) { deleteVehicle(id); refresh(); }
-  };
+const openAdd = () => { setForm(emptyVehicle); setEditing(null); setShowModal(true); };
+const openEdit = (v) => { setForm(v); setEditing(v.id); setShowModal(true); };
+const closeModal = () => { setShowModal(false); setEditing(null); setForm(emptyVehicle); };
+const handleChange = e => {
+  const val = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+  setForm({ ...form, [e.target.name]: val });
+};
+const addFeature = () => {
+  if (!featureInput.trim()) return;
+  setForm({ ...form, features: [...(form.features || []), featureInput.trim()] });
+  setFeatureInput('');
+};
+const removeFeature = (i) => setForm({ ...form, features: form.features.filter((_, idx) => idx !== i) });
 
   const filtered = vehicles.filter(v =>
     v.name.toLowerCase().includes(search.toLowerCase()) ||

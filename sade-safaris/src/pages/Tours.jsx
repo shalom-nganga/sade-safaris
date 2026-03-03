@@ -20,8 +20,11 @@ function Tours() {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    setTours(getTours());
-  }, []);
+  async function load() {
+    setTours(await getTours());
+  }
+  load();
+}, []);
 
   // Filter
   let filtered = tours.filter(t => {

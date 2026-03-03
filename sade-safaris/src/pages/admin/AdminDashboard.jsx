@@ -17,13 +17,14 @@ function AdminDashboard() {
   const [recentMessages, setRecentMessages] = useState([]);
 
   useEffect(() => {
-    const tours = getTours();
-    const vehicles = getVehicles();
-    const safariBookings = getSafariBookings();
-    const carBookings = getCarBookings();
-    const blog = getBlogPosts();
-    const messages = getMessages();
-    const offers = getOffers();
+  async function load() {
+    const tours = await getTours();
+    const vehicles = await getVehicles();
+    const safariBookings = await getSafariBookings();
+    const carBookings = await getCarBookings();
+    const blog = await getBlogPosts();
+    const messages = await getMessages();
+    const offers = await getOffers();
 
     const safariRevenue = safariBookings
       .filter(b => b.status === 'Confirmed')
@@ -46,11 +47,12 @@ function AdminDashboard() {
       totalRevenue: safariRevenue + carRevenue,
     });
 
-    setRecentSafari(safariBookings.slice(-5).reverse());
-    setRecentCar(carBookings.slice(-5).reverse());
-    setRecentMessages(messages.filter(m => m.status === 'Unread').slice(-5).reverse());
-  }, []);
-
+    setRecentSafari(safariBookings.slice(0, 5));
+    setRecentCar(carBookings.slice(0, 5));
+    setRecentMessages(messages.filter(m => m.status === 'Unread').slice(0, 5));
+  }
+  load();
+}, []);
   const statCards = [
     { label: 'Total Tours', value: stats.tours, icon: '🦁', color: '#4a9c2f', bg: '#eaf5e3', path: '/admin/tours' },
     { label: 'Vehicles', value: stats.vehicles, icon: '🚗', color: '#1a56db', bg: '#eff6ff', path: '/admin/vehicles' },

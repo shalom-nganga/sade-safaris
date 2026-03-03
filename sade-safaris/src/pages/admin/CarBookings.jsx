@@ -15,21 +15,26 @@ function CarBookings() {
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
 
-  useEffect(() => { setBookings(getCarBookings()); }, []);
+  useEffect(() => {
+  async function load() {
+    setBookings(await getCarBookings());
+  }
+  load();
+}, []);
 
-  const refresh = () => setBookings(getCarBookings());
+const refresh = async () => setBookings(await getCarBookings());
 
-  const handleStatus = (id, status) => {
-    updateCarBookingStatus(id, status);
+const handleStatus = async (id, status) => {
+  await updateCarBookingStatus(id, status);
+  refresh();
+};
+
+const handleDelete = async (id) => {
+  if (window.confirm('Delete this booking?')) {
+    await deleteCarBooking(id);
     refresh();
-  };
-
-  const handleDelete = (id) => {
-    if (window.confirm('Delete this booking?')) {
-      deleteCarBooking(id);
-      refresh();
-    }
-  };
+  }
+};
 
   const filtered = bookings
     .filter(b => filterStatus === 'All' || b.status === filterStatus)

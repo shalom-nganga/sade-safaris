@@ -13,21 +13,26 @@ function SafariBookings() {
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
 
-  useEffect(() => { setBookings(getSafariBookings()); }, []);
+  useEffect(() => {
+  async function load() {
+    setBookings(await getSafariBookings());
+  }
+  load();
+}, []);
 
-  const refresh = () => setBookings(getSafariBookings());
+const refresh = async () => setBookings(await getSafariBookings());
 
-  const handleStatus = (id, status) => {
-    updateSafariBookingStatus(id, status);
+const handleStatus = async (id, status) => {
+  await updateSafariBookingStatus(id, status);
+  refresh();
+};
+
+const handleDelete = async (id) => {
+  if (window.confirm('Delete this booking?')) {
+    await deleteSafariBooking(id);
     refresh();
-  };
-
-  const handleDelete = (id) => {
-    if (window.confirm('Delete this booking?')) {
-      deleteSafariBooking(id);
-      refresh();
-    }
-  };
+  }
+};
 
   const filtered = bookings
     .filter(b => filterStatus === 'All' || b.status === filterStatus)

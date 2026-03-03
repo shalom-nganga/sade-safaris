@@ -14,39 +14,45 @@ function AdminOffers() {
   const [form, setForm] = useState(emptyOffer);
   const [includeInput, setIncludeInput] = useState('');
 
-  useEffect(() => { setOffers(getOffers()); }, []);
-  const refresh = () => setOffers(getOffers());
+  useEffect(() => {
+  async function load() {
+    setOffers(await getOffers());
+  }
+  load();
+}, []);
 
-  const openAdd = () => { setForm(emptyOffer); setEditing(null); setShowModal(true); };
-  const openEdit = (o) => { setForm(o); setEditing(o.id); setShowModal(true); };
-  const closeModal = () => { setShowModal(false); setEditing(null); setForm(emptyOffer); };
+const refresh = async () => setOffers(await getOffers());
 
-  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
+const handleSave = async () => {
+  if (!form.title || !form.discount) return alert('Title and discount are required!');
+  await saveOffer({ ...form, id: editing || undefined });
+  await refresh();
+  closeModal();
+};
 
-  const addInclude = () => {
-    if (!includeInput.trim()) return;
-    setForm({ ...form, includes: [...(form.includes || []), includeInput.trim()] });
-    setIncludeInput('');
-  };
-
-  const removeInclude = (i) => setForm({ ...form, includes: form.includes.filter((_, idx) => idx !== i) });
-
-  const handleSave = () => {
-    if (!form.title || !form.discount) return alert('Title and discount are required!');
-    saveOffer({ ...form, id: editing || undefined });
+const handleDelete = async (id) => {
+  if (window.confirm('Delete this offer?')) {
+    await deleteOffer(id);
     refresh();
-    closeModal();
-  };
+  }
+};
 
-  const handleDelete = (id) => {
-    if (window.confirm('Delete this offer?')) { deleteOffer(id); refresh(); }
-  };
+const handleToggleStatus = async (offer) => {
+  const next = offer.status === 'Active' ? 'Expired' : 'Active';
+  await saveOffer({ ...offer, status: next });
+  refresh();
+};
 
-  const handleToggleStatus = (offer) => {
-    const next = offer.status === 'Active' ? 'Expired' : 'Active';
-    saveOffer({ ...offer, status: next });
-    refresh();
-  };
+const openAdd = () => { setForm(emptyOffer); setEditing(null); setShowModal(true); };
+const openEdit = (o) => { setForm(o); setEditing(o.id); setShowModal(true); };
+const closeModal = () => { setShowModal(false); setEditing(null); setForm(emptyOffer); };
+const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
+const addInclude = () => {
+  if (!includeInput.trim()) return;
+  setForm({ ...form, includes: [...(form.includes || []), includeInput.trim()] });
+  setIncludeInput('');
+};
+const removeInclude = (i) => setForm({ ...form, includes: form.includes.filter((_, idx) => idx !== i) });
 
   const statusColor = (status) => {
     if (status === 'Active') return { bg: '#eaf5e3', color: '#4a9c2f' };

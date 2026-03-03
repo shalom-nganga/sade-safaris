@@ -17,13 +17,16 @@ function AdminBlog() {
   const [form, setForm] = useState(emptyPost);
   const [tagInput, setTagInput] = useState('');
 
-  useEffect(() => { setPosts(getBlogPosts()); }, []);
-  const refresh = () => setPosts(getBlogPosts());
+  useEffect(() => {
+    async function load() { setPosts(await getBlogPosts()); }
+    load();
+  }, []);
+
+  const refresh = async () => setPosts(await getBlogPosts());
 
   const openAdd = () => { setForm(emptyPost); setEditing(null); setShowModal(true); };
   const openEdit = (post) => { setForm(post); setEditing(post.id); setShowModal(true); };
   const closeModal = () => { setShowModal(false); setEditing(null); setForm(emptyPost); };
-
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
   const addTag = () => {
@@ -31,23 +34,21 @@ function AdminBlog() {
     setForm({ ...form, tags: [...(form.tags || []), tagInput.trim()] });
     setTagInput('');
   };
-
   const removeTag = (i) => setForm({ ...form, tags: form.tags.filter((_, idx) => idx !== i) });
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.title || !form.author) return alert('Title and author are required!');
-    saveBlogPost({ ...form, id: editing || undefined });
-    refresh();
+    await saveBlogPost({ ...form, id: editing || undefined });
+    await refresh();
     closeModal();
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('Delete this post?')) { deleteBlogPost(id); refresh(); }
+  const handleDelete = async (id) => {
+    if (window.confirm('Delete this post?')) { await deleteBlogPost(id); refresh(); }
   };
 
-  const handleToggleStatus = (post) => {
-    const updated = { ...post, status: post.status === 'Published' ? 'Draft' : 'Published' };
-    saveBlogPost(updated);
+  const handleToggleStatus = async (post) => {
+    await saveBlogPost({ ...post, status: post.status === 'Published' ? 'Draft' : 'Published' });
     refresh();
   };
 
@@ -146,7 +147,6 @@ function AdminBlog() {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-
               <div style={{ gridColumn: '1 / -1' }}>
                 <label style={{ display: 'block', fontSize: '11px', fontWeight: 800, color: '#8b5cf6', letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: '6px' }}>TITLE *</label>
                 <input name="title" value={form.title} onChange={handleChange} placeholder="Post title..."
@@ -188,7 +188,6 @@ function AdminBlog() {
                 </select>
               </div>
 
-              {/* Image Upload */}
               <div style={{ gridColumn: '1 / -1' }}>
                 <label style={{ display: 'block', fontSize: '11px', fontWeight: 800, color: '#8b5cf6', letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: '6px' }}>IMAGE</label>
                 <ImageUpload value={form.img} onChange={val => setForm({ ...form, img: val })} />

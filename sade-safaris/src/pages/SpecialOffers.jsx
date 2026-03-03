@@ -113,9 +113,12 @@ function SpecialOffers() {
   const [hovered, setHovered] = useState(null);
 
   useEffect(() => {
-    const active = getOffers().filter(o => o.status === 'Active');
-    setDynamicOffers(active);
-  }, []);
+  async function load() {
+    const all = await getOffers();
+    setDynamicOffers(all.filter(o => o.status === 'Active'));
+  }
+  load();
+}, []);
 
   // Merge dynamic + static, dynamic first
   const allOffers = [

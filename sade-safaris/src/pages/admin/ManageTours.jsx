@@ -55,35 +55,41 @@ function ManageTours() {
   const [includeInput, setIncludeInput] = useState('');
   const [excludeInput, setExcludeInput] = useState('');
 
-  useEffect(() => { setTours(getTours()); }, []);
-  const refresh = () => setTours(getTours());
+  useEffect(() => {
+  async function load() {
+    setTours(await getTours());
+  }
+  load();
+}, []);
 
-  const openAdd = () => { setForm(emptyTour); setEditing(null); setShowModal(true); };
-  const openEdit = (tour) => { setForm(tour); setEditing(tour.id); setShowModal(true); };
-  const closeModal = () => { setShowModal(false); setEditing(null); setForm(emptyTour); };
+const refresh = async () => setTours(await getTours());
 
-  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
+const handleSave = async () => {
+  if (!form.title || !form.price || !form.days) return alert('Title, price and days are required!');
+  await saveTour({ ...form, id: editing || undefined });
+  await refresh();
+  closeModal();
+};
 
-  const addTag = (field, value, setter) => {
-    if (!value.trim()) return;
-    setForm({ ...form, [field]: [...(form[field] || []), value.trim()] });
-    setter('');
-  };
-
-  const removeTag = (field, index) => {
-    setForm({ ...form, [field]: form[field].filter((_, i) => i !== index) });
-  };
-
-  const handleSave = () => {
-    if (!form.title || !form.price || !form.days) return alert('Title, price and days are required!');
-    saveTour({ ...form, id: editing || undefined });
+const handleDelete = async (id) => {
+  if (window.confirm('Delete this tour?')) {
+    await deleteTour(id);
     refresh();
-    closeModal();
-  };
+  }
+};
 
-  const handleDelete = (id) => {
-    if (window.confirm('Delete this tour?')) { deleteTour(id); refresh(); }
-  };
+const openAdd = () => { setForm(emptyTour); setEditing(null); setShowModal(true); };
+const openEdit = (tour) => { setForm(tour); setEditing(tour.id); setShowModal(true); };
+const closeModal = () => { setShowModal(false); setEditing(null); setForm(emptyTour); };
+const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
+const addTag = (field, value, setter) => {
+  if (!value.trim()) return;
+  setForm({ ...form, [field]: [...(form[field] || []), value.trim()] });
+  setter('');
+};
+const removeTag = (field, index) => {
+  setForm({ ...form, [field]: form[field].filter((_, i) => i !== index) });
+};
 
   const filtered = tours.filter(t =>
     t.title.toLowerCase().includes(search.toLowerCase()) ||
