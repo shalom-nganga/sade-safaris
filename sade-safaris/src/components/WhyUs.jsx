@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React from 'react';
 
 const features = [
   {
@@ -24,8 +24,7 @@ const features = [
 ];
 
 function WhyUs() {
-  const [hovered, setHovered] = useState(null);
-
+// const [hovered, setHovered] = useState(null);
   return (
     <section style={{ padding: '72px 5%', background: '#eaf5e3' }}>
       <div style={{ maxWidth: '1400px', margin: '0 auto' }}>

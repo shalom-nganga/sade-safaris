@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import TopBar from '../components/TopBar';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -102,7 +102,7 @@ const staticPosts = [
 const categories = ['All', 'Wildlife', 'Destinations', 'Travel Tips', 'Conservation'];
 
 function Blog() {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [dynamicPosts, setDynamicPosts] = useState([]);
   const [activeCategory, setActiveCategory] = useState('All');
   const [hovered, setHovered] = useState(null);

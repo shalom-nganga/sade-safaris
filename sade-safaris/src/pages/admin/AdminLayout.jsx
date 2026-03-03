@@ -43,7 +43,7 @@ function AdminLayout({ page }) {
 
   useEffect(() => {
     if (!localStorage.getItem('adminAuth')) navigate('/admin');
-  }, []);
+  }, [navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem('adminAuth');

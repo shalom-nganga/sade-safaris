@@ -13,15 +13,15 @@ import CarHireHome from './pages/CarHireHome';
 import CarContact from './pages/CarContact';
 import CarServices from './pages/CarServices';
 import AdminLogin from './pages/admin/AdminLogin';
-import AdminDashboard from './pages/admin/AdminDashboard';
+// import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminLayout from './pages/admin/AdminLayout';
-import SafariBookings from './pages/admin/SafariBookings';
-import CarBookings from './pages/admin/CarBookings';
-import ManageTours from './pages/admin/ManageTours';
-import ManageVehicles from './pages/admin/ManageVehicles';
-import AdminBlog from './pages/admin/AdminBlog';
-import AdminOffers from './pages/admin/AdminOffers';
-import AdminMessages from './pages/admin/AdminMessages';
+// import SafariBookings from './pages/admin/SafariBookings';
+// import CarBookings from './pages/admin/CarBookings';
+// import ManageTours from './pages/admin/ManageTours';
+// import ManageVehicles from './pages/admin/ManageVehicles';
+// import AdminBlog from './pages/admin/AdminBlog';
+// import AdminOffers from './pages/admin/AdminOffers';
+// import AdminMessages from './pages/admin/AdminMessages';
 
 function App() {
   return (
@@ -56,7 +56,3 @@ function App() {
 
 export default App;
 
-
-// BA4skARix./Sn7f
-// https://tavzrippckuzibpsbgiy.supabase.co-project url
-// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhdnpyaXBwY2t1emlicHNiZ2l5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1NTUzODUsImV4cCI6MjA4ODEzMTM4NX0.HLQK8kIO3-CBmyfQxw3DkTfU29BEqVidVERo-XTh2SQ
